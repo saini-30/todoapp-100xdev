@@ -5,14 +5,16 @@ const cors = require("cors");
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+
+// Allow requests from localhost:5173 (frontend)
+app.use(cors({
+    origin: 'http://localhost:5173', // Allow frontend origin
+}));
 
 // Route to create a new todo
 app.post('/todo', async (req, res) => {
     const createpayload = req.body;
     const parsedpayload = todoSchema.safeParse(createpayload);
-
-    // just to check if the data came is invalide syntax or not  is 
     if (!parsedpayload.success) {
         res.status(400).json({
             error: 'You sent an invalid payload',
@@ -40,22 +42,21 @@ app.get('/todos', async (req, res) => {
 // Route to update todo completion status
 app.put('/completed', async (req, res) => {
     const updatepayload = req.body;
-    const parsedpayload = updatetodo.safeParse(updatepayload);
-    if (!parsedpayload.success) {
-        res.status(400).json({
-            error: 'You sent an invalid input',
-        });
-        return;
+    console.log('Received update payload:', updatepayload);
+
+    if (!updatepayload.id) {
+        return res.status(400).json({ error: 'Missing todo id' });
     }
 
-    await todo.update(
-        { _id: req.body.id }, 
-     { completed: true } 
-    );
+    const todoToUpdate = await todo.findOne({ _id: updatepayload.id });
+    if (!todoToUpdate) {
+        return res.status(404).json({ error: 'Todo not found' });
+    }
 
-    res.json({
-        msg: 'Todo updated successfully',
-    });
+    await todo.updateOne({ _id: updatepayload.id }, { $set: { completed: true } });
+    console.log('Todo marked as complete:', updatepayload.id);
+
+    res.json({ msg: 'Todo updated successfully' });
 });
 
 // Start the server and listen on a specific port
