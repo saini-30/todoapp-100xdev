@@ -33,6 +33,7 @@ app.post('/todo', async (req, res) => {
     });
 });
 
+
 // Route to get all todos
 app.get('/todos', async (req, res) => {
     const todos = await todo.find({});
@@ -40,7 +41,7 @@ app.get('/todos', async (req, res) => {
 });
 
 // Route to update todo completion status
-app.put('/completed', async (req, res) => {
+app.put('/completed ', async (req, res) => {
     const updatepayload = req.body;
     console.log('Received update payload:', updatepayload);
 
